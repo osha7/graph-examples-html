@@ -1,41 +1,107 @@
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
+<!-- https://www.youtube.com/watch?v=5-ptp9tRApM -->
+<!-- tabular data in form of csv file: comma separated values -->
+  <!DOCTYPE html>
+<html lang="en">
   <head>
-    <meta charset="utf-8">
-    <title>Bar Chart</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" charset="utf-8"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Fetch and Graph CSV</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
   </head>
   <body>
-<!-- https://nightfury-alfa.com/pages/codingsnow/tutorials/tutorial20.html -->
-<!-- https://www.youtube.com/watch?v=clo_FeBrhk0 -->
-    <!--chart start-->
-    <div class="chart">
-      <ul class="numbers">
-        <li><span>100%</span></li>
-        <li><span>50%</span></li>
-        <li><span>0%</span></li>
-      </ul>
-      <ul class="bars">
-        <li><div class="bar" data-percentage="50"></div><span>Option 01</span></li>
-        <li><div class="bar" data-percentage="30"></div><span>Option 02</span></li>
-        <li><div class="bar" data-percentage="60"></div><span>Option 03</span></li>
-        <li><div class="bar" data-percentage="100"></div><span>Option 04</span></li>
-        <li><div class="bar" data-percentage="80"></div><span>Option 05</span></li>
-      </ul>
-    </div>
-    <!--chart end-->
+    <!-- html5 canvas -->
+    <canvas id="myChart" width="400" height="400"></canvas>
+    <script>
 
-    <script type="text/javascript">
-    $(function(){
-      $('.bars li .bar').each(function(key, bar){
-        var percentage = $(this).data('percentage');
-        $(this).animate({
-          'height' : percentage + '%'
-        },1000);
-      });
-    });
+      createChart()
+
+      async function createChart() {
+        data = await getData()
+        const ctx = document.getElementById('myChart').getContext('2d');
+        const myChart = new Chart(ctx, {
+            // type: 'bar',
+            type: 'line',
+            data: {
+                labels: data.x,
+                datasets: [{
+                    label: 'Combined Land-Surface Air and Sea-Surface Water Temperature (°F)',
+                    data: data.y,
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    fill: false,
+                    // backgroundColor: [
+                    //     'rgba(255, 99, 132, 0.2)',
+                    //     'rgba(54, 162, 235, 0.2)',
+                    //     'rgba(255, 206, 86, 0.2)',
+                    //     'rgba(75, 192, 192, 0.2)',
+                    //     'rgba(153, 102, 255, 0.2)',
+                    //     'rgba(255, 159, 64, 0.2)'
+                    // ],
+                    // borderColor: [
+                    //     'rgba(255, 99, 132, 1)',
+                    //     'rgba(54, 162, 235, 1)',
+                    //     'rgba(255, 206, 86, 1)',
+                    //     'rgba(75, 192, 192, 1)',
+                    //     'rgba(153, 102, 255, 1)',
+                    //     'rgba(255, 159, 64, 1)'
+                    // ],
+                    borderWidth: 1
+                }]
+            },
+            // options: {
+            //     scales: {
+            //         yAxes: [{
+            //             ticks: {
+            //                 beginAtZero: true
+            //             }
+            //         }]
+            //     }
+            // }
+            options: {
+              scales: {
+                yAxes: [{
+                  ticks: {
+                    // Include a dollar sign in the ticks
+                    callback: function(value, index, values) {
+                      return value + '°';
+                    }
+                  }
+                }]
+              }
+            }
+        });
+      }
+// Data from: https://data.giss.nasa.gov/gistemp/
+// Mean from: https://earthobservatory.nasa.gov/world-of-change/DecadalTemp
+
+// this will work when using 'go live' only (((not opening index.html file)))
+// URL scheme must be "http" or "https" for CORS request.
+// You need to be serving your index.html locally or have your site hosted on a live server somewhere for the Fetch API to work properly.
+
+// d3 or p5 will parse csv for you
+// https://d3js.org/
+// p5.js: https://p5js.org
+// parse manually with split()
+      async function getData() {
+        const x = []
+        const y = []
+        const response = await fetch('ZonAnn.Ts+dSST.csv')
+        const data = await response.text()
+        // console.log(data)
+        const table = data.split('\n').slice(1) // '\n' is a line break or regex: (/\n/)
+        // console.log(rows)
+        table.forEach(row => {
+          const columns = row.split(',')
+          const year = columns[0]
+          x.push(year)
+          const temp = columns[1]
+          y.push((parseFloat(temp) + 14)*(9/5)+30)
+          // console.log(year, temp)
+        })
+        return{ x, y }
+      }
     </script>
-
+    
   </body>
 </html>
