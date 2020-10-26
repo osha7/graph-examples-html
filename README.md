@@ -1,4 +1,1 @@
-# graph-vanilla-js
-npm init
-or npm init --yes
-npm install
+# graph-examples-html
